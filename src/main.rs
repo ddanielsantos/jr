@@ -1,10 +1,43 @@
-use clap::*;
-fn main() {
-    let _ = Command::new("jr - jq rusty brother")
-        .author("\ngithub.com/ddanielsantos")
-        .version("- v0.0.5")
-        .about("\nLow scale JSON processor")
-        // .arg(Arg::new("in_file"))
-        .after_help("Just like jq and jp, but now in Rust ")
-        .get_matches();
+mod token;
+
+use crate::token::Token;
+use std::error::Error;
+use std::fs;
+
+fn is_string(c: char) -> bool {
+    let specials = "_";
+    ('a'..='z').contains(&c.to_ascii_lowercase()) | specials.contains(c)
+}
+
+fn scan(source: &str) -> Vec<Token> {
+    let mut res: Vec<Token> = Vec::new();
+
+    for (i, c) in source.char_indices() {
+        match c {
+            ' ' => res.push(Token::WhiteSpace),
+            '{' => res.push(Token::LeftCurly),
+            '}' => res.push(Token::RightCurly),
+            '[' => res.push(Token::LeftBracket),
+            ']' => res.push(Token::RightBracket),
+            '"' => res.push(Token::Quote),
+            ',' => res.push(Token::Comma),
+            ':' => res.push(Token::Colon),
+            ';' => res.push(Token::Semicolon),
+            '.' => res.push(Token::Dot),
+            '-' => res.push(Token::Minus),
+            '0'..='9' => res.push(Token::Number),
+            c if is_string(c) => res.push(Token::String),
+            _ => panic!("Invalid char: '{}' at position {}", c, i),
+        }
+    }
+
+    res
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let f = fs::read_to_string("source.json")?;
+
+    println!("{:?}", scan(&f));
+
+    Ok(())
 }
