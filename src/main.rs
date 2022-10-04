@@ -1,13 +1,8 @@
 mod token;
 
-use crate::token::Token;
+use jr::{is_string, Token};
 use std::error::Error;
 use std::fs;
-
-fn is_string(c: char) -> bool {
-    let specials = "_";
-    ('a'..='z').contains(&c.to_ascii_lowercase()) | specials.contains(c)
-}
 
 fn scan(source: &str) -> Vec<Token> {
     let mut res: Vec<Token> = Vec::new();
